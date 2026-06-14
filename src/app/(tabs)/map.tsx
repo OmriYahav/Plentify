@@ -11,6 +11,7 @@ import {distanceKm}from'@/lib/distance';
 import {useLocation}from'@/hooks/useLocation';
 import {useNearbyListings}from'@/hooks/useNearbyListings';
 import {Listing}from'@/types/models';
+import {useI18n}from'@/lib/i18n';
 
 const MIN_RADIUS=1;
 const MAX_RADIUS=100;
@@ -18,6 +19,7 @@ const SLIDER_WIDTH=280;
 
 export default function MapScreen(){
   const mapRef=useRef<MapView>(null);
+  const {t,isRTL}=useI18n();
   const {coords,granted,loading:locationLoading,error:locationError,refresh}=useLocation();
   const [sel,setSel]=useState<Listing|null>(null);
   const [radiusKm,setRadiusKm]=useState(5);
@@ -37,7 +39,7 @@ export default function MapScreen(){
     <PlentifyMap ref={mapRef} center={coords} radiusKm={radiusKm} onPanDrag={()=>setMapMoved(true)} showsUserLocation={granted===true}>
       {coords&&<>
         <Circle center={{latitude:coords.lat,longitude:coords.lng}} radius={radiusKm*1000} fillColor="rgba(31,94,59,.08)" strokeColor="rgba(31,94,59,.24)" strokeWidth={2}/>
-        <Marker coordinate={{latitude:coords.lat,longitude:coords.lng}} anchor={{x:.5,y:.5}} title="You are here">
+        <Marker coordinate={{latitude:coords.lat,longitude:coords.lng}} anchor={{x:.5,y:.5}} title={t('youAreHere')}>
           <View style={styles.userMarker}><View style={styles.userMarkerDot}/></View>
         </Marker>
       </>}
@@ -47,11 +49,11 @@ export default function MapScreen(){
     <View style={styles.topBar}><Chip label={`${radiusKm} km`} active onPress={openRadius}/></View>
     <TouchableOpacity style={[styles.centerButton,mapMoved&&styles.centerButtonActive]} onPress={centerOnMe} activeOpacity={.85}><Text style={styles.centerButtonText}>⌖</Text></TouchableOpacity>
 
-    {(locationLoading||itemsLoading)&&<StatusCard><ActivityIndicator color={theme.colors.primary}/><Text style={styles.statusText}>{locationLoading?'Finding your location…':'Loading nearby items…'}</Text></StatusCard>}
-    {!locationLoading&&(granted===false||locationError)&&<StatusCard><Text style={styles.statusTitle}>Location unavailable</Text><Text style={styles.statusText}>{locationError??'Location permission is needed to show items near you.'}</Text><Button title="Try again" onPress={refresh}/></StatusCard>}
-    {itemsError&&!itemsLoading&&<StatusCard><Text style={styles.statusTitle}>Could not load map items</Text><Text style={styles.statusText}>{itemsError}</Text></StatusCard>}
+    {(locationLoading||itemsLoading)&&<StatusCard><ActivityIndicator color={theme.colors.primary}/><Text style={styles.statusText}>{locationLoading?t('findingLocation'):t('loadingNearbyItems')}</Text></StatusCard>}
+    {!locationLoading&&(granted===false||locationError)&&<StatusCard><Text style={styles.statusTitle}>{t('locationUnavailable')}</Text><Text style={styles.statusText}>{locationError??t('locationPermissionNeeded')}</Text><Button title={t('tryAgain')} onPress={refresh}/></StatusCard>}
+    {itemsError&&!itemsLoading&&<StatusCard><Text style={styles.statusTitle}>{t('couldNotLoadMapItems')}</Text><Text style={styles.statusText}>{itemsError}</Text></StatusCard>}
 
-    <RadiusSheet visible={radiusOpen} value={draftRadius} onChange={setDraftRadius} onApply={applyRadius} onClose={()=>setRadiusOpen(false)}/>
+    <RadiusSheet t={t} isRTL={isRTL} visible={radiusOpen} value={draftRadius} onChange={setDraftRadius} onApply={applyRadius} onClose={()=>setRadiusOpen(false)}/>
     {sel&&<MapPreviewCard listing={sel} onView={()=>router.push(`/listing/${sel.id}`)}/>} 
   </View>;
 }
@@ -59,18 +61,18 @@ export default function MapScreen(){
 function StatusCard({children}:{children:React.ReactNode}){return <View style={styles.statusCard}>{children}</View>}
 function regionFor(coords:{lat:number;lng:number},radiusKm:number){const delta=Math.max(.02,Math.min(3,(radiusKm/111)*2.8));return{latitude:coords.lat,longitude:coords.lng,latitudeDelta:delta,longitudeDelta:delta};}
 
-function RadiusSheet({visible,value,onChange,onApply,onClose}:{visible:boolean;value:number;onChange:(v:number)=>void;onApply:()=>void;onClose:()=>void}){
+function RadiusSheet({visible,value,onChange,onApply,onClose,t,isRTL}:{visible:boolean;value:number;onChange:(v:number)=>void;onApply:()=>void;onClose:()=>void;t:(key:any)=>string;isRTL:boolean}){
   const update=(x:number)=>onChange(Math.max(MIN_RADIUS,Math.min(MAX_RADIUS,Math.round(MIN_RADIUS+(x/SLIDER_WIDTH)*(MAX_RADIUS-MIN_RADIUS)))));
   const pan=useMemo(()=>PanResponder.create({onStartShouldSetPanResponder:()=>true,onMoveShouldSetPanResponder:()=>true,onPanResponderGrant:e=>update(e.nativeEvent.locationX),onPanResponderMove:e=>update(e.nativeEvent.locationX)}),[]);
   const pct=(value-MIN_RADIUS)/(MAX_RADIUS-MIN_RADIUS);
   return <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
     <Pressable style={styles.backdrop} onPress={onClose}/>
     <View style={styles.sheet}>
-      <View style={styles.handle}/><View style={styles.sheetHeader}><Text style={styles.sheetTitle}>Choose radius</Text><TouchableOpacity onPress={onClose}><Text style={styles.cancelText}>Cancel</Text></TouchableOpacity></View>
+      <View style={styles.handle}/><View style={styles.sheetHeader}><Text style={styles.sheetTitle}>{t('chooseRadius')}</Text><TouchableOpacity onPress={onClose}><Text style={styles.cancelText}>{t('cancel')}</Text></TouchableOpacity></View>
       <Text style={styles.radiusValue}>{value} km</Text>
       <View style={styles.sliderLabels}><Text style={styles.label}>1 km</Text><Text style={styles.label}>100 km</Text></View>
       <View style={styles.slider} {...pan.panHandlers}><View style={[styles.sliderFill,{width:`${pct*100}%`}]}/><View style={[styles.thumb,{left:pct*SLIDER_WIDTH-12}]}/></View>
-      <Button title="Apply radius" onPress={onApply}/>
+      <Button title={t('applyRadius')} onPress={onApply}/>
     </View>
   </Modal>;
 }
