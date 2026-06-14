@@ -1,6 +1,10 @@
 {
   "scripts": {
-    "start": "expo start",
+    "start": "node scripts/start-expo-lan.js",
+    "start:lan": "node scripts/start-expo-lan.js",
+    "start:clear": "node scripts/start-expo-lan.js --clear",
+    "start:tunnel": "expo start --tunnel",
+    "start:local": "expo start --localhost",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
