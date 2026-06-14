@@ -1,0 +1,2 @@
+import {ListingType} from '@/types/models';
+export const LISTING_TYPES:Record<ListingType,{label:string;short:string;color:string}>={OFFER:{label:'I have',short:'Offer',color:'#1F5E3B'},REQUEST:{label:"I’m looking for",short:'Request',color:'#5B6C8F'},SWAP:{label:'Exchange',short:'Swap',color:'#8A633A'},LEND:{label:'Lend / borrow',short:'Lend',color:'#346E73'},HELP:{label:'Help / knowledge',short:'Help',color:'#6D5E9C'},PUBLIC_TREE:{label:'Public fruit tree',short:'Tree',color:'#4F7D30'}};

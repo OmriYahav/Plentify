@@ -1,0 +1,2 @@
+import {useState}from'react';import {createListing}from'@/services/listings';import {Listing}from'@/types/models';
+export function useCreateListing(){const[loading,setLoading]=useState(false);const[error,setError]=useState<string|null>(null);async function submit(input:Partial<Listing>){setLoading(true);setError(null);try{return await createListing(input)}catch(e:any){setError(e.message);throw e}finally{setLoading(false)}}return{submit,loading,error};}

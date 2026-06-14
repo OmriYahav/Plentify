@@ -1,0 +1,5 @@
+import {supabase}from'@/lib/supabase';import {demoConversations,demoMessages}from'@/services/demoData';
+export async function fetchConversations(){if(!supabase)return demoConversations;const{data,error}=await supabase.from('conversations').select('*,listings(*),messages(*)').order('last_message_at',{ascending:false});if(error)throw error;return data;}
+export async function fetchMessages(conversationId:string){if(!supabase)return demoMessages.filter(m=>m.conversation_id===conversationId);const{data,error}=await supabase.from('messages').select('*').eq('conversation_id',conversationId).order('created_at');if(error)throw error;return data;}
+export async function sendMessage(conversationId:string,senderId:string,body:string){if(!supabase)return {id:String(Date.now()),conversation_id:conversationId,sender_id:senderId,body,created_at:new Date().toISOString()};const{data,error}=await supabase.from('messages').insert({conversation_id:conversationId,sender_id:senderId,body}).select().single();if(error)throw error;return data;}
+// TODO Phase 2: subscribe to Supabase realtime changes for messages and push notifications via Expo Notifications.

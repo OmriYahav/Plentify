@@ -1,0 +1,2 @@
+import {supabase}from'@/lib/supabase';
+export async function uploadListingImage(userId:string,listingId:string,uri:string){if(!supabase)return uri;const res=await fetch(uri);const blob=await res.blob();const path=`${userId}/listings/${listingId}/${Date.now()}.jpg`;const{error}=await supabase.storage.from('listing-images').upload(path,blob,{contentType:'image/jpeg'});if(error)throw error;const{data}=supabase.storage.from('listing-images').getPublicUrl(path);return data.publicUrl;}

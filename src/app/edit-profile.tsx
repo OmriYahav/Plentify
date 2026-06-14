@@ -1,0 +1,2 @@
+import {Text}from'react-native';import {Button,Field,Screen}from'@/components/ui/Primitives';import {demoProfile}from'@/services/demoData';
+export default()=> <Screen><Text style={{fontSize:28,fontWeight:'900',marginBottom:18}}>Edit profile</Text><Field defaultValue={demoProfile.full_name}/><Field defaultValue={demoProfile.city} style={{marginTop:12}}/><Field defaultValue={demoProfile.neighborhood||''} placeholder="Neighborhood" style={{marginTop:12}}/><Button title="Save changes" style={{marginTop:16}}/></Screen>;

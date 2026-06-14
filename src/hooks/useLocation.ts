@@ -1,0 +1,2 @@
+import {useEffect,useState} from 'react';import {requestCurrentLocation} from '@/lib/location';import {DEFAULT_COORD} from '@/lib/distance';
+export function useLocation(){const[coords,setCoords]=useState(DEFAULT_COORD);const[granted,setGranted]=useState<boolean|null>(null);useEffect(()=>{requestCurrentLocation().then(r=>{setCoords(r.coords);setGranted(r.granted)}).catch(()=>setGranted(false))},[]);return{coords,granted};}
