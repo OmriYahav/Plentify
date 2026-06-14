@@ -1,0 +1,2 @@
+import React from 'react';import {Text,View} from 'react-native';import {Marker} from 'react-native-maps';import {CATEGORIES} from '@/constants/categories';import {Listing} from '@/types/models';
+export function PlentifyMarker({listing,onPress}:{listing:Listing;onPress:()=>void}){return <Marker coordinate={{latitude:listing.lat,longitude:listing.lng}} onPress={onPress}><View style={{backgroundColor:listing.type==='PUBLIC_TREE'?'#4F7D30':'white',padding:8,borderRadius:18,borderWidth:1,borderColor:'#DCE4DB'}}><Text>{CATEGORIES[listing.category].emoji}</Text></View></Marker>}

@@ -1,0 +1,1 @@
+-- Demo seed requires auth users first. Insert sample listings with real profile UUIDs after creating test accounts.

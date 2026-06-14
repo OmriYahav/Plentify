@@ -1,0 +1,2 @@
+import * as Location from 'expo-location';import {DEFAULT_COORD} from './distance';
+export async function requestCurrentLocation(){const {status}=await Location.requestForegroundPermissionsAsync();if(status!=='granted')return {coords:DEFAULT_COORD,granted:false};const p=await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.Balanced});return {coords:{lat:p.coords.latitude,lng:p.coords.longitude},granted:true};}

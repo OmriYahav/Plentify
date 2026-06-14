@@ -1,0 +1,3 @@
+import {Category} from '@/types/models';
+export const CATEGORIES:Record<Category,{label:string;emoji:string;color:string}>={produce:{label:'Produce',emoji:'🥬',color:'#DDEBDD'},herbs:{label:'Herbs',emoji:'🌿',color:'#DDF0D4'},eggs:{label:'Eggs',emoji:'🥚',color:'#F7EBC7'},seeds:{label:'Seeds',emoji:'◌',color:'#E9E1C9'},seedlings:{label:'Seedlings',emoji:'🌱',color:'#D9EFD8'},cuttings:{label:'Cuttings',emoji:'✂',color:'#E1ECD7'},compost:{label:'Compost',emoji:'●',color:'#E5D5C5'},tools:{label:'Tools',emoji:'⌁',color:'#DDE7EA'},help:{label:'Help',emoji:'?',color:'#E7E0F2'},public_trees:{label:'Public trees',emoji:'♧',color:'#D8EACD'},other:{label:'Other',emoji:'+',color:'#ECECE4'}};
+export const CATEGORY_KEYS=Object.keys(CATEGORIES) as Category[];
