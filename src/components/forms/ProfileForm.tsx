@@ -1,2 +1,2 @@
-import React from 'react';import {Field}from'@/components/ui/Primitives';
-export function ProfileForm(){return <><Field placeholder="Full name"/><Field placeholder="City" style={{marginTop:12}}/><Field placeholder="Neighborhood optional" style={{marginTop:12}}/></>}
+import React from 'react';import {Field}from'@/components/ui/Primitives';import {useI18n}from'@/lib/i18n';
+export function ProfileForm(){const{t}=useI18n();return <><Field placeholder={t('fullName')}/><Field placeholder={t('city')} style={{marginTop:12}}/><Field placeholder={t('neighborhood')} style={{marginTop:12}}/></>}

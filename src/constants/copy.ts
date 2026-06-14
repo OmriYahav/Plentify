@@ -1,1 +1,2 @@
-export const copy={appName:'Plentify',tagline:'Share what’s around you.',welcome:'Share, request, and discover useful things around you.',homeEmpty:'No nearby shares yet. Be the first to post something useful around you.',requestEmpty:'Looking for something? Create a request and let neighbors help.',createSuccess:'Your post is live. People nearby can now discover it.',locationDenied:'We can still show listings by city. Add your area manually.',treeWarning:'Only mark trees in public spaces. Pick respectfully and follow local rules.'};
+import {en}from'@/translations/en';
+export const copy=en;
