@@ -10,10 +10,13 @@ const missingSupabaseEnvVars = [
 
 export const isSupabaseConfigured = missingSupabaseEnvVars.length === 0;
 
+export const supabaseMissingConfigMessage =
+  'Supabase is not configured. Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to .env from .env.example, then restart Expo with npx expo start --clear.';
+
 if (!isSupabaseConfigured && __DEV__) {
   console.warn(
     `[supabase] Missing ${missingSupabaseEnvVars.join(', ')}. ` +
-      'Create a .env file from .env.example and restart Expo so auth and live data are enabled.',
+      'Create a .env file from .env.example and restart Expo with npx expo start --clear so auth and live data are enabled.',
   );
 }
 
