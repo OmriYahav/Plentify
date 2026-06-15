@@ -6,10 +6,15 @@ import {isSupabaseConfigured,supabase,supabaseMissingConfigMessage}from'@/lib/su
 import {demoProfile}from'@/services/demoData';
 
 type SocialProvider='apple'|'google';
-type Auth={session:Session|null;userId:string;loading:boolean;demo:boolean;signIn:(e:string,p:string)=>Promise<void>;signUp:(e:string,p:string,profile?:{full_name:string;city:string})=>Promise<void>;signInWithProvider:(provider:SocialProvider)=>Promise<'success'|'cancelled'>;resetPassword:(email:string)=>Promise<void>;signOut:()=>Promise<void>};
+type Auth={session:Session|null;userId:string;loading:boolean;demo:boolean;signIn:(e:string,p:string)=>Promise<void>;signUp:(e:string,p:string,profile?:{full_name:string;city:string})=>Promise<void>;signInWithProvider:(provider:SocialProvider)=>Promise<'success'|'cancelled'>;completeOAuthCallback:(url:string)=>Promise<void>;resetPassword:(email:string)=>Promise<void>;signOut:()=>Promise<void>};
 const C=createContext<Auth|null>(null);
 
 function getRedirectUrl(){return Linking.createURL('auth/callback')}
+
+function logAuthFailure(action:string,error:unknown,extra:Record<string,unknown>={}){
+  const e=error as {message?:string;status?:number;code?:string;name?:string};
+  console.warn(`[auth] ${action} failed`,{message:e?.message||String(error),status:e?.status,code:e?.code,name:e?.name,...extra});
+}
 
 function getProfilePatch(user:User){
   const meta=user.user_metadata??{};
@@ -24,20 +29,29 @@ async function ensureProfile(sessionValue:Session|null){
   if(error)throw error;
 }
 
+function readOAuthParams(url:string){
+  const parsed=new URL(url);
+  const query=parsed.searchParams;
+  const hash=new URLSearchParams(parsed.hash.startsWith('#')?parsed.hash.slice(1):parsed.hash);
+  const get=(key:string)=>query.get(key)||hash.get(key);
+  return {code:get('code'),accessToken:get('access_token'),refreshToken:get('refresh_token'),error:get('error'),errorDescription:get('error_description')};
+}
+
 async function completeOAuth(url:string){
-  const parsed=new URL(url);const code=parsed.searchParams.get('code');
-  if(code){const{data,error}=await supabase!.auth.exchangeCodeForSession(code);if(error)throw error;await ensureProfile(data.session);return}
-  const accessToken=parsed.hash.match(/access_token=([^&]+)/)?.[1];const refreshToken=parsed.hash.match(/refresh_token=([^&]+)/)?.[1];
-  if(accessToken&&refreshToken){const{data,error}=await supabase!.auth.setSession({access_token:decodeURIComponent(accessToken),refresh_token:decodeURIComponent(refreshToken)});if(error)throw error;await ensureProfile(data.session);return}
-  throw new Error('Missing OAuth session data')
+  const params=readOAuthParams(url);
+  if(params.error)throw new Error(params.errorDescription||params.error);
+  if(params.code){const{data,error}=await supabase!.auth.exchangeCodeForSession(params.code);if(error)throw error;await ensureProfile(data.session);return}
+  if(params.accessToken&&params.refreshToken){const{data,error}=await supabase!.auth.setSession({access_token:params.accessToken,refresh_token:params.refreshToken});if(error)throw error;await ensureProfile(data.session);return}
+  throw new Error('missing_oauth_session');
 }
 
 export function AuthProvider({children}:{children:React.ReactNode}){const[session,setSession]=useState<Session|null>(null);const[loading,setLoading]=useState(true);
-  useEffect(()=>{WebBrowser.maybeCompleteAuthSession();if(!supabase){setLoading(false);return}supabase.auth.getSession().then(({data})=>{setSession(data.session);setLoading(false);if(data.session)ensureProfile(data.session).catch(()=>{})});const {data:{subscription}}=supabase.auth.onAuthStateChange((_e,s)=>{setSession(s);if(s)ensureProfile(s).catch(()=>{})});return()=>subscription.unsubscribe()},[]);
-  const signIn=useCallback(async(e:string,p:string)=>{if(!supabase)throw new Error(supabaseMissingConfigMessage);const{data,error}=await supabase.auth.signInWithPassword({email:e.trim().toLowerCase(),password:p});if(error)throw error;await ensureProfile(data.session)},[]);
-  const signUp=useCallback(async(e:string,p:string,profile?:{full_name:string;city:string})=>{if(!supabase)throw new Error(supabaseMissingConfigMessage);const email=e.trim().toLowerCase();const options=profile?{data:{full_name:profile.full_name.trim(),city:profile.city.trim()}}:undefined;if(__DEV__)console.info('[auth] signUp request',{email,profile:profile?{full_name:profile.full_name.trim(),city:profile.city.trim()}:undefined});const{data,error}=await supabase.auth.signUp({email,password:p,options});if(error){if(__DEV__)console.warn('[auth] signUp error',{message:error.message,status:error.status,name:error.name});throw error}if(__DEV__)console.info('[auth] signUp response',{userId:data.user?.id,hasSession:!!data.session});await ensureProfile(data.session)},[]);
-  const signInWithProvider=useCallback(async(provider:SocialProvider)=>{if(!supabase)throw new Error(supabaseMissingConfigMessage);const redirectTo=getRedirectUrl();const{data,error}=await supabase.auth.signInWithOAuth({provider,options:{redirectTo,skipBrowserRedirect:true,queryParams:provider==='google'?{access_type:'offline',prompt:'select_account'}:undefined}});if(error)throw error;if(!data?.url)throw new Error('OAuth provider did not return a URL');const result=await WebBrowser.openAuthSessionAsync(data.url,redirectTo);if(result.type!=='success')return'cancelled';await completeOAuth(result.url);return'success'},[]);
-  const resetPassword=useCallback(async(email:string)=>{if(!supabase)throw new Error(supabaseMissingConfigMessage);const{error}=await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(),{redirectTo:getRedirectUrl()});if(error)throw error},[]);
-  const value=useMemo<Auth>(()=>({session,userId:session?.user.id||demoProfile.id,loading,demo:!isSupabaseConfigured,signIn,signUp,signInWithProvider,resetPassword,signOut:async()=>{await supabase?.auth.signOut();setSession(null)}}),[session,loading,signIn,signUp,signInWithProvider,resetPassword]);
+  useEffect(()=>{WebBrowser.maybeCompleteAuthSession();if(!supabase){setLoading(false);return}supabase.auth.getSession().then(({data,error})=>{if(error)logAuthFailure('restore session',error);setSession(data.session);setLoading(false);if(data.session)ensureProfile(data.session).catch(e=>logAuthFailure('ensure profile',e))});const {data:{subscription}}=supabase.auth.onAuthStateChange((_e,s)=>{setSession(s);if(s)ensureProfile(s).catch(e=>logAuthFailure('ensure profile',e))});return()=>subscription.unsubscribe()},[]);
+  const signIn=useCallback(async(e:string,p:string)=>{if(!supabase)throw new Error(supabaseMissingConfigMessage);const email=e.trim().toLowerCase();const{data,error}=await supabase.auth.signInWithPassword({email,password:p});if(error){logAuthFailure('password sign in',error,{email});throw error}await ensureProfile(data.session)},[]);
+  const signUp=useCallback(async(e:string,p:string,profile?:{full_name:string;city:string})=>{if(!supabase)throw new Error(supabaseMissingConfigMessage);const email=e.trim().toLowerCase();const options=profile?{data:{full_name:profile.full_name.trim(),city:profile.city.trim()}}:undefined;if(__DEV__)console.info('[auth] signUp request',{email,profile:profile?{full_name:profile.full_name.trim(),city:profile.city.trim()}:undefined});const{data,error}=await supabase.auth.signUp({email,password:p,options});if(error){logAuthFailure('sign up',error,{email});throw error}if(__DEV__)console.info('[auth] signUp response',{userId:data.user?.id,hasSession:!!data.session});await ensureProfile(data.session)},[]);
+  const signInWithProvider=useCallback(async(provider:SocialProvider)=>{if(!supabase)throw new Error(supabaseMissingConfigMessage);const redirectTo=getRedirectUrl();const{data,error}=await supabase.auth.signInWithOAuth({provider,options:{redirectTo,skipBrowserRedirect:true,queryParams:provider==='google'?{access_type:'offline',prompt:'select_account'}:undefined}});if(error){logAuthFailure(`${provider} OAuth init`,error);throw error}if(!data?.url)throw new Error('missing_oauth_authorization_url');const result=await WebBrowser.openAuthSessionAsync(data.url,redirectTo);if(result.type==='cancel'||result.type==='dismiss')return'cancelled';if(result.type!=='success'||!('url'in result)){throw new Error('oauth_browser_failed')}try{await completeOAuth(result.url);return'success'}catch(e){logAuthFailure(`${provider} OAuth callback`,e);throw e}},[]);
+  const completeOAuthCallback=useCallback(async(url:string)=>{if(!supabase)throw new Error(supabaseMissingConfigMessage);try{await completeOAuth(url)}catch(e){logAuthFailure('deep link OAuth callback',e);throw e}},[]);
+  const resetPassword=useCallback(async(email:string)=>{if(!supabase)throw new Error(supabaseMissingConfigMessage);const normalized=email.trim().toLowerCase();const{error}=await supabase.auth.resetPasswordForEmail(normalized,{redirectTo:getRedirectUrl()});if(error){logAuthFailure('reset password',error,{email:normalized});throw error}},[]);
+  const value=useMemo<Auth>(()=>({session,userId:session?.user.id||demoProfile.id,loading,demo:!isSupabaseConfigured,signIn,signUp,signInWithProvider,completeOAuthCallback,resetPassword,signOut:async()=>{await supabase?.auth.signOut();setSession(null)}}),[session,loading,signIn,signUp,signInWithProvider,completeOAuthCallback,resetPassword]);
   return <C.Provider value={value}>{children}</C.Provider>}
 export function useAuth(){const ctx=useContext(C);if(!ctx)throw new Error('AuthProvider missing');return ctx;}

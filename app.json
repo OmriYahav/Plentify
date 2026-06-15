@@ -1,1 +1,39 @@
-{"expo":{"name":"Plentify","slug":"plentify","scheme":"plentify","version":"1.0.0","orientation":"portrait","userInterfaceStyle":"light","plugins":["expo-router","expo-location","expo-image-picker","expo-secure-store"],"experiments":{"typedRoutes":true},"ios":{"supportsTablet":true,"bundleIdentifier":"com.plentify.app"},"android":{"package":"com.plentify.app","adaptiveIcon":{"backgroundColor":"#FAFAF5"}}}}
+{
+  "expo": {
+    "name": "Plentify",
+    "slug": "plentify",
+    "scheme": "plentify",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      "expo-location",
+      "expo-image-picker",
+      "expo-secure-store"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.plentify.app",
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "plentify"
+            ]
+          }
+        ]
+      }
+    },
+    "android": {
+      "package": "com.plentify.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FAFAF5"
+      }
+    }
+  }
+}
