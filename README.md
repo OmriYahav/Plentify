@@ -45,12 +45,34 @@ npm run web
   ```
 
 ## Environment
-Copy `.env.example` to `.env` and set the Expo public Supabase variables:
-- `EXPO_PUBLIC_SUPABASE_URL` — your Supabase project URL.
+The Expo project root is this repository root, the same directory that contains `package.json`, `app.json`, and `.env.example`. Put `.env` in this directory before starting Expo; nested folders are not read by this app's `expo-router/entry` entry point.
+
+Create `.env` from the checked-in template:
+
+```bash
+cp .env.example .env
+```
+
+Fill in the real values from your Supabase project dashboard:
+
+- `EXPO_PUBLIC_SUPABASE_URL` — your Supabase Project URL.
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY` — your Supabase anon/public API key.
 - optional `EXPO_PUBLIC_DEMO_CITY`
 
-Expo only exposes environment variables to React Native when they are prefixed with `EXPO_PUBLIC_`. Do not use unprefixed names such as `SUPABASE_URL` in the app bundle, and do not commit real keys. Restart Expo after changing `.env` values so Metro picks up the new configuration.
+Use plain dotenv lines with no quotes, semicolons, hidden whitespace, or alternate variable names:
+
+```dotenv
+EXPO_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-or-publishable-client-key
+```
+
+Expo only exposes environment variables to React Native when they are prefixed with `EXPO_PUBLIC_`. Do not use unprefixed names such as `SUPABASE_URL`, framework-specific names such as `NEXT_PUBLIC_SUPABASE_URL` or `REACT_APP_SUPABASE_URL`, or any hardcoded Supabase credentials in the app bundle. Do not commit real keys; `.env` is intentionally ignored by git.
+
+Restart Expo with a cleared cache after creating or changing `.env` so Metro does not reuse stale values:
+
+```bash
+npx expo start --clear
+```
 
 Without Supabase credentials, the app runs in demo mode with Kfar Saba mock listings, and auth screens fail gracefully with a friendly unavailable message.
 
