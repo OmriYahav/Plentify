@@ -23,6 +23,10 @@ export const supabaseMissingConfigMessage =
   'Supabase is not configured. Add EXPO_PUBLIC_SUPABASE_URL and EXPO_PUBLIC_SUPABASE_ANON_KEY to .env from .env.example, then restart Expo with npx expo start --clear.';
 
 if (__DEV__) {
+  console.log('[env debug]', {
+    hasUrl: Boolean(process.env.EXPO_PUBLIC_SUPABASE_URL),
+    hasAnonKey: Boolean(process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY),
+  });
   console.info('[env] Supabase config loaded:', {hasUrl, hasAnonKey});
 }
 
