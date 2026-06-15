@@ -46,7 +46,7 @@ export default function MapScreen(){
       {visibleListings.map(l=><PlentifyMarker key={l.id} listing={l} onPress={()=>setSel(l)}/>) }
     </PlentifyMap>
 
-    <View style={styles.topBar}><Chip label={`${radiusKm} km`} active onPress={openRadius}/></View>
+    <View style={styles.topBar}><Chip label={t('distanceKm').replace('{distance}',String(radiusKm))} active onPress={openRadius}/></View>
     <TouchableOpacity style={[styles.centerButton,mapMoved&&styles.centerButtonActive]} onPress={centerOnMe} activeOpacity={.85}><Text style={styles.centerButtonText}>⌖</Text></TouchableOpacity>
 
     {(locationLoading||itemsLoading)&&<StatusCard><ActivityIndicator color={theme.colors.primary}/><Text style={styles.statusText}>{locationLoading?t('findingLocation'):t('loadingNearbyItems')}</Text></StatusCard>}
@@ -69,8 +69,8 @@ function RadiusSheet({visible,value,onChange,onApply,onClose,t,isRTL}:{visible:b
     <Pressable style={styles.backdrop} onPress={onClose}/>
     <View style={styles.sheet}>
       <View style={styles.handle}/><View style={styles.sheetHeader}><Text style={styles.sheetTitle}>{t('chooseRadius')}</Text><TouchableOpacity onPress={onClose}><Text style={styles.cancelText}>{t('cancel')}</Text></TouchableOpacity></View>
-      <Text style={styles.radiusValue}>{value} km</Text>
-      <View style={styles.sliderLabels}><Text style={styles.label}>1 km</Text><Text style={styles.label}>100 km</Text></View>
+      <Text style={styles.radiusValue}>{t('distanceKm').replace('{distance}',String(value))}</Text>
+      <View style={styles.sliderLabels}><Text style={styles.label}>{t('distanceKm').replace('{distance}','1')}</Text><Text style={styles.label}>{t('distanceKm').replace('{distance}','100')}</Text></View>
       <View style={styles.slider} {...pan.panHandlers}><View style={[styles.sliderFill,{width:`${pct*100}%`}]}/><View style={[styles.thumb,{left:pct*SLIDER_WIDTH-12}]}/></View>
       <Button title={t('applyRadius')} onPress={onApply}/>
     </View>

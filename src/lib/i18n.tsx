@@ -20,4 +20,4 @@ export function I18nProvider({children}:{children:React.ReactNode}){const[langua
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 export function useI18n(){const ctx=useContext(I18nContext);if(!ctx)throw new Error('useI18n must be used within I18nProvider');return ctx;}
-export const languages:{code:Language;label:string}[]=[{code:'en',label:'English'},{code:'he',label:'עברית'}];
+export const languages:{code:Language;label:string}[]=[{code:'en',label:'אנגלית'},{code:'he',label:'עברית'}];

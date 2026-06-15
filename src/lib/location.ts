@@ -1,4 +1,7 @@
 import * as Location from 'expo-location';
+import {en}from'@/translations/en';
 export type LocationCoords={lat:number;lng:number};
-export type CurrentLocationResult={coords:LocationCoords|null;granted:boolean;error?:string};
-export async function requestCurrentLocation():Promise<CurrentLocationResult>{const services=await Location.hasServicesEnabledAsync();if(!services)return{coords:null,granted:false,error:'Please turn on Location Services to see items near you.'};const {status,canAskAgain}=await Location.requestForegroundPermissionsAsync();if(status!=='granted')return{coords:null,granted:false,error:canAskAgain?'Allow location access to center the map on you and show nearby items.':'Location permission is disabled. Enable it in your device settings to show nearby items.'};const p=await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.High});return{coords:{lat:p.coords.latitude,lng:p.coords.longitude},granted:true};}
+export type LocationErrorKey='locationServicesOff'|'locationAccessPrompt'|'locationPermissionDisabled';
+export type CurrentLocationResult={coords:LocationCoords|null;granted:boolean;errorKey?:LocationErrorKey};
+export async function requestCurrentLocation():Promise<CurrentLocationResult>{const services=await Location.hasServicesEnabledAsync();if(!services)return{coords:null,granted:false,errorKey:'locationServicesOff'};const {status,canAskAgain}=await Location.requestForegroundPermissionsAsync();if(status!=='granted')return{coords:null,granted:false,errorKey:canAskAgain?'locationAccessPrompt':'locationPermissionDisabled'};const p=await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.High});return{coords:{lat:p.coords.latitude,lng:p.coords.longitude},granted:true};}
+export type LocationTranslationKey=keyof typeof en;
