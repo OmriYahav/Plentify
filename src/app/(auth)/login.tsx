@@ -2,7 +2,7 @@ import {router}from'expo-router';
 import {useEffect,useState}from'react';
 import {Platform,Text,TouchableOpacity,View}from'react-native';
 import {Button,Field,Screen}from'@/components/ui/Primitives';
-import {BackButton}from'@/components/navigation/BackButton';
+import {BackButton}from'@/components/BackButton';
 import {theme}from'@/constants/theme';
 import {useAuth}from'@/hooks/useAuth';
 import {useI18n}from'@/lib/i18n';

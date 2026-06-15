@@ -3,7 +3,7 @@ import {useState}from'react';
 import {Text,View}from'react-native';
 import {z}from'zod';
 import {Button,Field,Screen}from'@/components/ui/Primitives';
-import {BackButton}from'@/components/navigation/BackButton';
+import {BackButton}from'@/components/BackButton';
 import {useAuth}from'@/hooks/useAuth';
 import {signupSchema}from'@/lib/validation';
 import {useI18n}from'@/lib/i18n';
