@@ -45,12 +45,14 @@ npm run web
   ```
 
 ## Environment
-Copy `.env.example` to `.env` and set:
-- `EXPO_PUBLIC_SUPABASE_URL`
-- `EXPO_PUBLIC_SUPABASE_ANON_KEY`
+Copy `.env.example` to `.env` and set the Expo public Supabase variables:
+- `EXPO_PUBLIC_SUPABASE_URL` — your Supabase project URL.
+- `EXPO_PUBLIC_SUPABASE_ANON_KEY` — your Supabase anon/public API key.
 - optional `EXPO_PUBLIC_DEMO_CITY`
 
-Without Supabase credentials, the app runs in demo mode with Kfar Saba mock listings.
+Expo only exposes environment variables to React Native when they are prefixed with `EXPO_PUBLIC_`. Do not use unprefixed names such as `SUPABASE_URL` in the app bundle, and do not commit real keys. Restart Expo after changing `.env` values so Metro picks up the new configuration.
+
+Without Supabase credentials, the app runs in demo mode with Kfar Saba mock listings, and auth screens fail gracefully with a friendly unavailable message.
 
 ## Supabase setup
 1. Create a Supabase project.

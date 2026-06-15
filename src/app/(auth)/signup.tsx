@@ -38,15 +38,15 @@ export default function Signup(){
     }
     setBusy(true);
     const payload=safeSignupPayload(input);
-    console.info('[signup] submitting payload',payload);
+    if(__DEV__)console.info('[signup] submitting payload',payload);
     try{
       await a.signUp(payload.email,password,{full_name:payload.full_name,city:payload.city});
-      console.info('[signup] signup completed',{email:payload.email});
+      if(__DEV__)console.info('[signup] signup completed',{email:payload.email});
       router.replace('/(tabs)/profile');
     }catch(e:any){
       const message=e?.message||String(e);
-      console.error('[signup] signup failed',{message,status:e?.status,code:e?.code,name:e?.name});
-      setErr(message||t('authError'));
+      if(__DEV__)console.warn('[signup] signup failed',{message,status:e?.status,code:e?.code,name:e?.name});
+      setErr(message==='SUPABASE_NOT_CONFIGURED'?t('signupUnavailable'):message||t('authError'));
     }finally{setBusy(false)}
   };
   const BackIcon=isRTL?ChevronRight:ChevronLeft;
