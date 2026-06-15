@@ -8,6 +8,7 @@ import {theme}from'@/constants/theme';
 import {useAuth}from'@/hooks/useAuth';
 import {signupSchema}from'@/lib/validation';
 import {useI18n}from'@/lib/i18n';
+import {isSupabaseConfigured}from'@/lib/supabase';
 
 function safeSignupPayload(input:{email:string;password:string;full_name:string;city:string}){
   return {email:input.email.trim().toLowerCase(),full_name:input.full_name.trim(),city:input.city.trim(),password_length:input.password.length};
@@ -36,6 +37,11 @@ export default function Signup(){
       setErr(t('formValidationError'));
       return;
     }
+    if(!isSupabaseConfigured){
+      setErr(t('signupUnavailable'));
+      if(__DEV__)console.warn('[signup] signup unavailable because Supabase environment variables are missing');
+      return;
+    }
     setBusy(true);
     const payload=safeSignupPayload(input);
     if(__DEV__)console.info('[signup] submitting payload',payload);
@@ -46,7 +52,7 @@ export default function Signup(){
     }catch(e:any){
       const message=e?.message||String(e);
       if(__DEV__)console.warn('[signup] signup failed',{message,status:e?.status,code:e?.code,name:e?.name});
-      setErr(message==='SUPABASE_NOT_CONFIGURED'?t('signupUnavailable'):message||t('authError'));
+      setErr(message||t('authError'));
     }finally{setBusy(false)}
   };
   const BackIcon=isRTL?ChevronRight:ChevronLeft;
