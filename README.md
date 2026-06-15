@@ -56,7 +56,9 @@ Without Supabase credentials, the app runs in demo mode with Kfar Saba mock list
 1. Create a Supabase project.
 2. Run `supabase/migrations/202606140001_initial_schema.sql` in SQL editor or via Supabase CLI.
 3. Enable email auth.
-4. Create a Storage bucket for listing images and add owner-folder policies before production.
+4. Enable Apple and Google in Supabase Auth providers. Use the native app id `com.plentify.app`, the app scheme `plentify`, and add `plentify://auth/callback` to the allowed redirect URLs.
+5. In Google Cloud, add iOS and Android OAuth clients for bundle/package id `com.plentify.app`; in Apple Developer, enable Sign in with Apple for the same bundle id.
+6. Create a Storage bucket for listing images and add owner-folder policies before production.
 
 ## MVP limitations
 - Realtime chat and push notifications are TODOs; current chat supports refresh/demo sending.
