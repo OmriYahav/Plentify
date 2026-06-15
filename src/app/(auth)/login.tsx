@@ -1,8 +1,8 @@
 import {router}from'expo-router';
-import {ChevronLeft,ChevronRight}from'lucide-react-native';
 import {useEffect,useState}from'react';
 import {Platform,Text,TouchableOpacity,View}from'react-native';
 import {Button,Field,Screen}from'@/components/ui/Primitives';
+import {BackButton}from'@/components/navigation/BackButton';
 import {theme}from'@/constants/theme';
 import {useAuth}from'@/hooks/useAuth';
 import {useI18n}from'@/lib/i18n';
@@ -24,15 +24,13 @@ export default function Login(){
   const[email,setEmail]=useState(''),[password,setPassword]=useState(''),[err,setErr]=useState(''),[info,setInfo]=useState(''),[showPassword,setShowPassword]=useState(false),[loadingSocial,setLoadingSocial]=useState<Social|null>(null),[loadingEmail,setLoadingEmail]=useState(false),[loadingReset,setLoadingReset]=useState(false);
   const a=useAuth();const{t,isRTL}=useI18n();
   const busy=a.loading||loadingEmail||loadingReset||!!loadingSocial;
-  const BackIcon=isRTL?ChevronRight:ChevronLeft;
   useEffect(()=>{if(!a.loading&&!a.demo&&a.session)router.replace('/(tabs)/profile')},[a.loading,a.demo,a.session]);
-  const goBack=()=>{if(busy)return;if(router.canGoBack())router.back();else router.replace('/(auth)/welcome')};
   const validateEmail=()=>{if(!emailRe.test(email.trim())){setErr(t('invalidEmail'));return false}return true};
   const social=async(provider:Social)=>{if(busy)return;setErr('');setInfo('');setLoadingSocial(provider);try{const result=await a.signInWithProvider(provider);if(result==='cancelled'){setInfo(t('socialAuthCancelled'));return}router.replace('/(tabs)/profile')}catch(e:any){setErr(authMessage(e?.message||'',t))}finally{setLoadingSocial(null)}};
   const emailLogin=async()=>{if(busy)return;setErr('');setInfo('');if(!validateEmail())return;if(!password.trim()){setErr(t('passwordRequired'));return}setLoadingEmail(true);try{await a.signIn(email,password);router.replace('/(tabs)/profile')}catch(e:any){setErr(authMessage(e?.message||'',t))}finally{setLoadingEmail(false)}};
   const forgot=async()=>{if(busy)return;setErr('');setInfo('');if(!validateEmail())return;setLoadingReset(true);try{await a.resetPassword(email);setInfo(t('resetPasswordSent'))}catch(e:any){setErr(authMessage(e?.message||'',t))}finally{setLoadingReset(false)}};
   return <Screen>
-    <TouchableOpacity accessibilityRole="button" accessibilityLabel={t('back')} disabled={busy} onPress={goBack} style={{alignSelf:isRTL?'flex-end':'flex-start',flexDirection:isRTL?'row-reverse':'row',alignItems:'center',gap:6,paddingVertical:8,opacity:busy?0.5:1}}><BackIcon size={22} color={theme.colors.text}/><Text style={{color:theme.colors.text,fontWeight:'700'}}>{t('back')}</Text></TouchableOpacity>
+    <BackButton disabled={busy} />
     <Text style={{fontSize:32,fontWeight:'900',marginTop:16,marginBottom:24,textAlign:isRTL?'right':'left'}}>{t('welcomeBack')}</Text>
     <View style={{gap:12}}>
       {Platform.OS==='ios'&&<Button accessibilityLabel={t('continueWithApple')} title={loadingSocial==='apple'?t('loading'):t('continueWithApple')} variant="ghost" disabled={busy} onPress={()=>social('apple')} style={{backgroundColor:'#111'}} textStyle={{color:'white'}}/>}
