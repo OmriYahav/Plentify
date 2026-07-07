@@ -1,6 +1,7 @@
 import {useCallback,useEffect,useRef,useState}from'react';
 import * as Location from 'expo-location';
 import {LocationCoords,LocationTranslationKey,requestCurrentLocation}from'@/lib/location';
+import {DEFAULT_COORD}from'@/lib/distance';
 import {useI18n}from'@/lib/i18n';
 
 type Area=string|null;
@@ -44,9 +45,9 @@ export function useLocation(){
     try{
       const r=await requestCurrentLocation();
       applyCoords(r.coords);setGranted(r.granted);setError(r.errorKey?t(r.errorKey as LocationTranslationKey):null);
-      if(r.granted)await startWatching();else stopWatching();
+      if(r.granted)await startWatching();else{applyCoords(DEFAULT_COORD);stopWatching();}
     }catch{
-      applyCoords(null);setGranted(false);setError(t('locationCurrentFailed'));stopWatching();
+      applyCoords(DEFAULT_COORD);setGranted(false);setError(t('locationCurrentFailed'));stopWatching();
     }finally{setLoading(false)}
   },[applyCoords,startWatching,stopWatching,t]);
 
