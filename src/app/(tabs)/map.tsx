@@ -22,7 +22,7 @@ export default function MapScreen(){
   const {t,isRTL}=useI18n();
   const {coords,granted,loading:locationLoading,error:locationError,refresh}=useLocation();
   const [sel,setSel]=useState<Listing|null>(null);
-  const [radiusKm,setRadiusKm]=useState(5);
+  const [radiusKm,setRadiusKm]=useState(2);
   const [draftRadius,setDraftRadius]=useState(radiusKm);
   const [radiusOpen,setRadiusOpen]=useState(false);
   const [mapMoved,setMapMoved]=useState(false);
@@ -52,6 +52,7 @@ export default function MapScreen(){
     {(locationLoading||itemsLoading)&&<StatusCard><ActivityIndicator color={theme.colors.primary}/><Text style={styles.statusText}>{locationLoading?t('findingLocation'):t('loadingNearbyItems')}</Text></StatusCard>}
     {!locationLoading&&(granted===false||locationError)&&<StatusCard><Text style={styles.statusTitle}>{t('locationUnavailable')}</Text><Text style={styles.statusText}>{locationError??t('locationPermissionNeeded')}</Text><Button title={t('tryAgain')} onPress={refresh}/></StatusCard>}
     {itemsError&&!itemsLoading&&<StatusCard><Text style={styles.statusTitle}>{t('couldNotLoadMapItems')}</Text><Text style={styles.statusText}>{itemsError}</Text></StatusCard>}
+    {!itemsLoading&&!itemsError&&visibleListings.length===0&&<StatusCard><Text style={styles.statusTitle}>{t('noPostsNearby')}</Text><Text style={styles.statusText}>{t('tryIncreasingRadius')}</Text><Button title={t('beFirstToPost')} onPress={()=>router.push('/create')}/></StatusCard>}
 
     <RadiusSheet t={t} isRTL={isRTL} visible={radiusOpen} value={draftRadius} onChange={setDraftRadius} onApply={applyRadius} onClose={()=>setRadiusOpen(false)}/>
     {sel&&<MapPreviewCard listing={sel} onView={()=>router.push(`/listing/${sel.id}`)}/>} 
@@ -59,7 +60,7 @@ export default function MapScreen(){
 }
 
 function StatusCard({children}:{children:React.ReactNode}){return <View style={styles.statusCard}>{children}</View>}
-function regionFor(coords:{lat:number;lng:number},radiusKm:number){const delta=Math.max(.02,Math.min(3,(radiusKm/111)*2.8));return{latitude:coords.lat,longitude:coords.lng,latitudeDelta:delta,longitudeDelta:delta};}
+function regionFor(coords:{lat:number;lng:number},radiusKm:number){const delta=Math.max(.018,Math.min(3,(radiusKm/111)*2.4));return{latitude:coords.lat,longitude:coords.lng,latitudeDelta:delta,longitudeDelta:delta};}
 
 function RadiusSheet({visible,value,onChange,onApply,onClose,t,isRTL}:{visible:boolean;value:number;onChange:(v:number)=>void;onApply:()=>void;onClose:()=>void;t:(key:any)=>string;isRTL:boolean}){
   const update=(x:number)=>onChange(Math.max(MIN_RADIUS,Math.min(MAX_RADIUS,Math.round(MIN_RADIUS+(x/SLIDER_WIDTH)*(MAX_RADIUS-MIN_RADIUS)))));
